@@ -1,8 +1,11 @@
+import hashlib
 import inspect
 import json
+import random
 import socket
 import string
 import subprocess
+import tempfile
 import time
 from collections import defaultdict
 from contextlib import contextmanager, suppress
@@ -11,13 +14,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Union
 
-import hashlib
-import random
 import requests
-import tempfile
 from googletrans import Translator
 from paho.mqtt.client import MQTTMessage
 
+import core.base.SuperManager as SuperManager
 import core.commons.model.Slot as slotModel
 from core.base.model.Manager import Manager
 from core.commons import constants
@@ -76,6 +77,9 @@ class CommonsManager(Manager):
 	def payload(message: MQTTMessage) -> dict:
 		try:
 			payload = json.loads(message.payload)
+			if isinstance(payload, bool):
+				message.payload = payload
+				raise TypeError
 		except (ValueError, TypeError):
 			var = message.topic.split('/')[-1]
 			payload = {var: message.payload}
@@ -136,8 +140,7 @@ class CommonsManager(Manager):
 		if 'siteId' in data:
 			return data['siteId'].replace('_', ' ')
 		else:
-			from core.base.SuperManager import SuperManager
-			return data.get('IPAddress', SuperManager.getInstance().configManager.getAliceConfigByName('deviceName'))
+			return data.get('IPAddress', SuperManager.SuperManager.getInstance().configManager.getAliceConfigByName('uuid'))
 
 
 	@staticmethod
@@ -331,10 +334,12 @@ class CommonsManager(Manager):
 		number = ''.join(random.choice(digits) for _ in range(length))
 		return int(number) if not number.startswith('0') else self.randomNumber(length)
 
+
 # noinspection PyUnusedLocal
 def py_error_handler(filename, line, function, err, fmt): #NOSONAR
 	# Errors are handled by our loggers
 	pass
 
 
+# noinspection PyTypeChecker
 c_error_handler = CommonsManager.ERROR_HANDLER_FUNC(py_error_handler) #NOSONAR

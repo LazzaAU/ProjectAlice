@@ -6,7 +6,6 @@
 <p align=center style="line-height: 2;">
   <a href="LICENSE" target="_blank"><img src="https://img.shields.io/github/license/project-alice-assistant/ProjectAlice" alt="License" /></a>
   <a href="https://discord.gg/Jfcj355" target="_blank"><img alt="Discord" src="https://img.shields.io/discord/579345007518154752?logo=discord"></a><br/>
-  <a href="https://travis-ci.org/project-alice-assistant/ProjectAlice" target="_blank"><img alt="Build Status" src="https://travis-ci.org/project-alice-assistant/ProjectAlice.svg?branch=master"></a>
   <a href="https://sonarcloud.io/dashboard?id=project-alice-assistant_ProjectAlice" target="_blank"><img alt="Coverage Status" src="https://sonarcloud.io/api/project_badges/measure?project=project-alice-assistant_ProjectAlice&metric=coverage"></a>
   <a href="https://sonarcloud.io/dashboard?id=project-alice-assistant_ProjectAlice" target="_blank"><img alt="Maintainability" src="https://sonarcloud.io/api/project_badges/measure?project=project-alice-assistant_ProjectAlice&metric=sqale_rating"></a>
   <a href="https://sonarcloud.io/dashboard?id=project-alice-assistant_ProjectAlice" target="_blank"><img alt="Code Smells" src="https://sonarcloud.io/api/project_badges/measure?project=project-alice-assistant_ProjectAlice&metric=code_smells"></a>
@@ -17,11 +16,13 @@ Project Alice is a smart voice home assistant that is completely modular and ext
 However, as an option, since we've built Project Alice on top of Snips, Project Alice can be configured to use some online alternatives and fall backs (for example, using Amazon or Google’s Text to Speech engines), just like Snips. Since Snips (and the Project Alice team) strongly believe that decisions about your privacy should be made by you and you alone, these options are all disabled by default.
 
 ## Installing
-Please follow the [documentation](https://docs.projectalice.io/set-up/)
+Please follow the [documentation](https://docs.projectalice.io/setup/)
 
 ## Chat with us and the community
 Join us on our [Discord server](https://discord.gg/C6HNtzV)
 
+## Install new skills
+Either directly on your device on the interface, or on [https://store.projectalice.io](https://store.projectalice.io)
 
 ## Who made this?
 The original code base was started at the end 2015 and several rewrites made it what it is today. It was entirely written by me *Psycho* until recently, where I decided to make the code openly available to the world.

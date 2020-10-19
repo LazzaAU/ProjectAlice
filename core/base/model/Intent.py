@@ -9,17 +9,19 @@ from core.user.model.AccessLevels import AccessLevel
 class Intent:
 	topic: str = field(init=False)
 	action: str = field(repr=False)
-	isProtected: bool = False
 	userIntent: bool = True
 	authLevel: AccessLevel = AccessLevel.ZERO
 	fallbackFunction: Optional[Callable] = None
 	_dialogMapping: dict = field(default_factory=dict)
 
+	# TODO remove me
+	isProtected: bool = False
+
 
 	def __post_init__(self):
 		self.topic = f'hermes/intent/{self.action}' if self.userIntent else self.action
 		if self.isProtected:
-			SM.SuperManager.getInstance().protectedIntentManager.protectIntent(self.topic)
+			print('Usage of `isProtected` is deprecated')
 
 
 	def __str__(self) -> str:
@@ -53,9 +55,12 @@ class Intent:
 		if isinstance(value, property):
 			self._dialogMapping = dict()
 		else:
-			self._dialogMapping = {
-				f'{skillName}:{dialogState}': func for dialogState, func in value.items()
-			}
+			try:
+				self._dialogMapping = {
+					f'{skillName}:{dialogState}': func for dialogState, func in value.items()
+				}
+			except:
+				self._dialogMapping = dict()
 
 
 	@property
@@ -65,7 +70,8 @@ class Intent:
 
 	def addDialogMapping(self, value: Dict[str, Callable], skillName: str):
 		for dialogState, func in value.items():
-			self.dialogMapping[f'{skillName}:{dialogState}'] = func
+			if callable(func):
+				self.dialogMapping[f'{skillName}:{dialogState}'] = func
 
 
 	def getMapping(self, session) -> Optional[Callable]:
