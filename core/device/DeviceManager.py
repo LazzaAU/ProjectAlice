@@ -377,8 +377,8 @@ class DeviceManager(Manager):
 				}
 			else:
 				displaySettings = {
-					'x': 75,
-					'y': 75
+					'x': 2,
+					'y': 2
 				}
 
 		data = {
@@ -449,12 +449,10 @@ class DeviceManager(Manager):
 		:param locationId: int
 		:return: bool
 		"""
-		loc = self.LocationManager.getLocation(locId=locationId)
-		if not loc:
-			raise Exception('Cannot change device location to a non existing location')
+		assert self.LocationManager.getLocation(locId=locationId) is not None, 'Cannot change device location to a non existing location'
 
-		if 0 < device.deviceType.perLocationLimit <= len(self.getDevicesByLocation(locationId, deviceType=device.deviceType, connectedOnly=False)):
-			raise Exception(f'Cannot move device **{device.displayName}** to new location, maximum per location limit reached')
+		if device.deviceType.perLocationLimit > 0:
+			assert len(self.getDevicesByLocation(locationId, deviceType=device.deviceType, connectedOnly=False)) < device.deviceType.perLocationLimit, 'Maximum devices of this type reached for target location'
 
 		return True
 
