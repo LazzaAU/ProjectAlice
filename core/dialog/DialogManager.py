@@ -10,6 +10,7 @@ from core.base.model.Manager import Manager
 from core.commons import constants
 from core.device.model.DeviceAbility import DeviceAbility
 from core.dialog.model.DialogSession import DialogSession
+from core.voice.WakewordRecorder import WakewordRecorderState
 
 
 class DialogManager(Manager):
@@ -31,6 +32,8 @@ class DialogManager(Manager):
 
 		self._disabledByDefaultIntents = set()
 		self._enabledByDefaultIntents = set()
+
+		self._userInputCaptureChime = True
 
 
 	def newSession(self, deviceUid: str, user: str = constants.UNKNOWN_USER, message: MQTTMessage = None, increaseTimeout: int = 0) -> DialogSession:
@@ -56,6 +59,9 @@ class DialogManager(Manager):
 
 
 	def onHotword(self, deviceUid: str, user: str = constants.UNKNOWN_USER):
+		if self.WakewordRecorder.state != WakewordRecorderState.IDLE:
+			return
+
 		self.logDebug(f'Wakeword detected by **{self.DeviceManager.getDevice(uid=deviceUid).displayName}**')
 
 		self._endedSessions[deviceUid] = self._sessionsById.pop(deviceUid, None)
@@ -78,7 +84,7 @@ class DialogManager(Manager):
 		if session.user != constants.UNKNOWN_USER:
 			talkNotification = talkNotification.format(session.user)
 		else:
-			talkNotification = talkNotification.format("")
+			talkNotification = talkNotification.format('')
 
 		# Play notification if needed
 		if self._feedbackSounds.get('deviceUid', True):
@@ -215,10 +221,11 @@ class DialogManager(Manager):
 			self.onEndSession(session=session, reason='abortedByUser')
 			return
 
-		self.MqttManager.publish(
-			topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', f'{uuid.uuid4()}'),
-			payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
-		)
+		if self._userInputCaptureChime:
+			self.MqttManager.publish(
+				topic=constants.TOPIC_PLAY_BYTES.format(session.deviceUid).replace('#', session.sessionId),
+				payload=bytearray(Path(f'system/sounds/{self.LanguageManager.activeLanguage}/end_of_input.wav').read_bytes())
+			)
 
 		# If we've set the filter to a random answer, forge the session and publish an intent captured as UserRandomAnswer
 		if session.intentFilter and session.intentFilter[-1] == 'UserRandomAnswer':
@@ -385,6 +392,7 @@ class DialogManager(Manager):
 
 
 	def onEndSession(self, session: DialogSession, reason: str = 'nominal'):
+		self.enableCaptureChime()
 		text = session.payload.get('text', '')
 
 		if text:
@@ -538,3 +546,11 @@ class DialogManager(Manager):
 
 	def getEnabledByDefaultIntents(self):
 		return self._enabledByDefaultIntents
+
+
+	def disableCaptureChime(self):
+		self._userInputCaptureChime = False
+
+
+	def enableCaptureChime(self):
+		self._userInputCaptureChime = True
